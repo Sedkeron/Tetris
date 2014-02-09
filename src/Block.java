@@ -2,6 +2,7 @@
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -19,11 +20,17 @@ import javax.imageio.ImageIO;
  *
  * @author Jonathon
  */
-public class BufferedImageBlock extends Component{
+public class Block extends Component{
     
     private BufferedImage bi;
+    private Point loc;
     
-    public BufferedImageBlock(float hue) {
+    public static final int DIR_DOWN=0;
+    public static final int DIR_UP=1;
+    public static final int DIR_LEFT=2;
+    public static final int DIR_RIGHT=3;
+    
+    public Block(int xLoc, int yLoc, float hue) {
         
         try {
             bi = ImageIO.read(new File(getClass().getResource("TetrisBlock.png").toURI()));
@@ -33,8 +40,9 @@ public class BufferedImageBlock extends Component{
         
         setHueSaturation(bi, hue, 1);
         
+        this.loc=new Point(xLoc, yLoc);
     }
-    
+        
     private void setHueSaturation(BufferedImage bi, float hue, float sat){        
         for (int x=0; x<bi.getWidth(); x++){
             for (int y=0; y<bi.getHeight(); y++){
@@ -48,8 +56,35 @@ public class BufferedImageBlock extends Component{
         }
     }
     
+    public BufferedImage getImage(){
+        return bi;
+    }
+    
     @Override
     public void paint(Graphics g){
-        g.drawImage(bi, 10, 10, null);
+        g.drawImage(bi, bi.getWidth()*loc.x, bi.getWidth()*(Field.HEIGHT-loc.y), null);
+    }
+    
+    public void shift(int direction){
+        if (direction == DIR_DOWN) loc.translate(0, -1);
+        else if (direction == DIR_UP) loc.translate(0,1);
+        else if (direction == DIR_LEFT) loc.translate(-1,0);
+        else if (direction == DIR_RIGHT) loc.translate(1,0);
+    }
+    
+    public void rotateCW(Point loc){
+        int dx = this.loc.y-loc.y;
+        int dy = loc.x-this.loc.x;
+        this.loc=new Point(loc.x+dx, loc.y+dy);
+    }
+    
+    public void rotateCCW(Point loc){
+        int dx = loc.y-this.loc.y;
+        int dy = this.loc.x-loc.x;
+        this.loc=new Point(loc.x+dx, loc.y+dy);
+    }
+    
+    public Point getLoc(){
+        return new Point(loc);
     }
 }
