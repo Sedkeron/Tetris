@@ -15,14 +15,14 @@ import javax.swing.JFrame;
  * @author Jonathon
  */
 public class GuiTester extends JApplet{
-    private Polyominoe p;
-    private Polyominoe p2;
+    private Polyomino p;
+    private Polyomino p2;
     
     public GuiTester(){
         boolean[][] shape = {{true},{true},{true},{true}};
-        p=new Polyominoe(5, 5, shape, 0);
+        p=new Polyomino(5, 5, shape, 0);
         boolean[][] shape2 = {{true, false},{true, false},{true, true}};
-        p2=new Polyominoe(10,10,shape2, .5f);
+        p2=new Polyomino(10,10,shape2, .5f);
     }
     
     public void buildUI(){
@@ -49,18 +49,18 @@ public class GuiTester extends JApplet{
         while(true){
             long t=System.currentTimeMillis();
             while (System.currentTimeMillis()-t<250){}
-            tst.p2.shift(Polyominoe.DIR_LEFT);
+            tst.p2.shift(Polyomino.DIR_LEFT);
             tst.p2.repaint();
             while (System.currentTimeMillis()-t<500){}
-            tst.p2.shift(Polyominoe.DIR_UP);
+            tst.p2.shift(Polyomino.DIR_UP);
             tst.p2.repaint();
             while (System.currentTimeMillis()-t<750){}
-            tst.p2.shift(Polyominoe.DIR_RIGHT);
+            tst.p2.shift(Polyomino.DIR_RIGHT);
             tst.p2.repaint();
             while (System.currentTimeMillis()-t<1000){}
             tst.p.rotateCW();
             tst.p.repaint();
-            tst.p2.shift(Polyominoe.DIR_DOWN);
+            tst.p2.shift(Polyomino.DIR_DOWN);
             tst.p2.repaint();
         }
     }

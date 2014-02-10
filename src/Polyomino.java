@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage;
  *
  * @author Jonathon
  */
-public class Polyominoe extends Component{
+public class Polyomino extends Component{
     private Point loc;
     private Block[][] poly;
     
@@ -22,7 +22,7 @@ public class Polyominoe extends Component{
     public static final int DIR_LEFT=2;
     public static final int DIR_RIGHT=3;
     
-    public Polyominoe(int xLoc, int yLoc, boolean[][] shape, float hue){
+    public Polyomino(int xLoc, int yLoc, boolean[][] shape, float hue){
         this.loc=new Point(xLoc, yLoc);
         
         int dx = (shape.length-1)/2;
