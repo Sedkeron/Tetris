@@ -7,9 +7,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -35,10 +33,8 @@ public class Block extends Component{
     
     public Block(int xLoc, int yLoc, float hue) {
         try {
-            bi = ImageIO.read(new File(getClass().getResource("TetrisBlock.png").toURI()));
+            bi = ImageIO.read(getClass().getResource("TetrisBlock.png"));
         } catch (IOException ex) {
-            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException ex) {
             Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
         }
         

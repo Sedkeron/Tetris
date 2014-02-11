@@ -28,7 +28,7 @@ public class Polyomino extends Component{
     public Polyomino(int xLoc, int yLoc, boolean[][] shape, float hue){
         this.loc=new Point(xLoc, yLoc);
         
-        shape = format(shape);
+        //shape = format(shape);
         
         int dx = (shape.length-1)/2;
         int dy = (shape[0].length-1)/2;
@@ -92,6 +92,8 @@ public class Polyomino extends Component{
     private boolean[][] format(boolean[][] shape) {
         shape=truncate(shape);
         shape=rotateDown(shape);
+        shape=makeSquare(shape);
+        return shape;
     }
     
     private boolean[][] truncate(boolean[][] shape) {
@@ -170,7 +172,49 @@ public class Polyomino extends Component{
         if (tWeight==maxWeight){
             boolean[][] newS = new boolean[shape.length][shape.length];
             
-            for (int i=0; i<)
+            for (int i=0; i<newS.length; i++){
+                for (int j=0; j<newS.length; j++){
+                    newS[i][j]=shape[newS.length-1-i][newS[i].length-1-j];
+                }
+            }
+            
+            return newS;
         }
+        
+        if (lWeight==maxWeight){
+            boolean[][] newS = new boolean[shape[0].length][shape.length];
+            
+            for (int i=0; i<newS.length; i++){
+                for (int j=0; j<newS[0].length; j++){
+                    newS[i][j]=shape[newS.length-1-j][i];
+                }
+            }
+            
+            return newS;
+        }
+        
+        boolean[][] newS = new boolean[shape[0].length][shape.length];
+            
+            for (int i=0; i<shape.length; i++){
+                for (int j=0; j<shape[0].length; j++){
+                    newS[i][j]=shape[shape.length-1-j][i];
+                }
+            }
+            
+            return newS;
+    }
+    
+    private boolean[][] makeSquare(boolean[][] shape){
+        int newSize=(shape.length>shape[0].length)?shape.length:shape[0].length;
+        
+        boolean newS[][]=new boolean[newSize][newSize];
+        
+        for (int i=0; i<shape.length; i++){
+            for (int j=0; j<shape[0].length; j++){
+                newS[i+(newSize-shape.length)/2][j+(newSize-shape[0].length)/2]=shape[i][j];
+            }
+        }
+            
+        return newS;
     }
 }
