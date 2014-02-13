@@ -1,10 +1,13 @@
 package Temp;
 
 
+import PolyominoIO.PolyominoInputStream;
 import TetrisBlock.Polyomino;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Random;
 import javax.swing.JApplet;
 import javax.swing.JFrame;
 
@@ -19,18 +22,16 @@ import javax.swing.JFrame;
  */
 public class GuiTester extends JApplet{
     private Polyomino p;
-    private Polyomino p2;
     
     public GuiTester(){
-        boolean[][] shape = {{true},{true},{true},{true}};
-        p=new Polyomino(5, 5, shape, 0);
-        boolean[][] shape2 = {{true, false},{true, false},{true, true}};
-        p2=new Polyomino(10,10,shape2, .5f);
+        PolyominoInputStream i = new PolyominoInputStream(4);
+        ArrayList<boolean[][]> all = i.readAll();
+        
+        p=new Polyomino(10, 10, all.get((int)(Math.random()*all.size())), new Random().nextFloat());
     }
     
     public void buildUI(){
         add(p);
-        add(p2);
         //only does the last; comment out add(p2); to see the first
     }
     
@@ -51,20 +52,21 @@ public class GuiTester extends JApplet{
         
         while(true){
             long t=System.currentTimeMillis();
-            while (System.currentTimeMillis()-t<250){}
-            tst.p2.shift(Polyomino.DIR_LEFT);
-            tst.p2.repaint();
-            while (System.currentTimeMillis()-t<500){}
-            tst.p2.shift(Polyomino.DIR_UP);
-            tst.p2.repaint();
-            while (System.currentTimeMillis()-t<750){}
-            tst.p2.shift(Polyomino.DIR_RIGHT);
-            tst.p2.repaint();
+//            while (System.currentTimeMillis()-t<200){}
+//            tst.p.shift(Polyomino.DIR_LEFT);
+//            tst.p.repaint();
+//            while (System.currentTimeMillis()-t<400){}
+//            tst.p.shift(Polyomino.DIR_UP);
+//            tst.p.repaint();
+//            while (System.currentTimeMillis()-t<600){}
+//            tst.p.shift(Polyomino.DIR_RIGHT);
+//            tst.p.repaint();
+//            while (System.currentTimeMillis()-t<800){}
+//            tst.p.shift(Polyomino.DIR_DOWN);
+//            tst.p.repaint();
             while (System.currentTimeMillis()-t<1000){}
-            tst.p.rotateCW();
+            tst.p.rotate();
             tst.p.repaint();
-            tst.p2.shift(Polyomino.DIR_DOWN);
-            tst.p2.repaint();
         }
     }
 }

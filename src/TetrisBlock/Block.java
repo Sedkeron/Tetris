@@ -33,7 +33,7 @@ public class Block extends Component{
     
     public Block(int xLoc, int yLoc, float hue) {
         try {
-            bi = ImageIO.read(getClass().getResource("TetrisBlock.png"));
+            bi = ImageIO.read(getClass().getResource("/TetrisBlock/TetrisBlock.png"));
         } catch (IOException ex) {
             Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -72,16 +72,9 @@ public class Block extends Component{
         else if (direction == DIR_RIGHT) loc.translate(1,0);
     }
     
-    public void rotateCW(Point loc){
-        int dx = this.loc.y-loc.y;
-        int dy = loc.x-this.loc.x;
-        this.loc=new Point(loc.x+dx, loc.y+dy);
-    }
-    
-    public void rotateCCW(Point loc){
-        int dx = loc.y-this.loc.y;
-        int dy = this.loc.x-loc.x;
-        this.loc=new Point(loc.x+dx, loc.y+dy);
+    public void translate(int dx, int dy){
+        loc.x+=dx;
+        loc.y+=dy;
     }
     
     public Point getLoc(){

@@ -4,6 +4,9 @@ package PolyominoIO;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * To change this template, choose Tools | Templates
@@ -18,8 +21,12 @@ public class PolyominoInputStream {
     FileInputStream i;
     int size;
     
-    public PolyominoInputStream(int size) throws FileNotFoundException{
-        i = new FileInputStream(size + "-omino");
+    public PolyominoInputStream(int size){
+        try {
+            i = new FileInputStream(size + "-omino");
+        } catch (FileNotFoundException ex) {
+            PolyominoGeneration.PolyominoGenerator.generatePolyomino(size);
+        }
         this.size=size;
     }
     
@@ -43,5 +50,25 @@ public class PolyominoInputStream {
             }
         }
         return polyomino;
+    }
+    
+    public ArrayList<boolean[][]> readAll(){
+        ArrayList<boolean[][]> all = new ArrayList<>();
+        
+        boolean notDone=true;
+        while (notDone){
+            try {
+                boolean[][] b = read();
+                if (b==null){
+                    notDone=false;
+                } else {
+                    all.add(b);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(PolyominoInputStream.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return all;
     }
 }

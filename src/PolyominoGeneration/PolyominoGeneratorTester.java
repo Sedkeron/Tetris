@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class PolyominoGeneratorTester {
     public static void main(String[] args) {
         
-        int n=37;
+        int n=10;
         
         PolyominoGenerator.generatePolyomino(n);
         ArrayList<boolean[][]> polys = new ArrayList<>();
@@ -47,7 +47,7 @@ public class PolyominoGeneratorTester {
         String str="";
         for (boolean[] arra:array){
             for (boolean boo:arra){
-                str += boo?1:0;
+                str += boo?"[]":"..";
             }
             str+="\n";
         }

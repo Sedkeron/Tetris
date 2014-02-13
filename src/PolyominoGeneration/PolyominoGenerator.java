@@ -50,13 +50,7 @@ public class PolyominoGenerator {
             generatePolyomino(size-1);
         }
         
-        
-        PolyominoInputStream i = null;
-        try {
-            i = new PolyominoInputStream(size-1);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(PolyominoGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        PolyominoInputStream i = new PolyominoInputStream(size-1);
         
         polyID.clear();
         
