@@ -24,7 +24,7 @@ public class GuiTester extends JApplet{
     private Polyomino p;
     
     public GuiTester(){
-        PolyominoInputStream i = new PolyominoInputStream(4);
+        PolyominoInputStream i = new PolyominoInputStream(10);
         ArrayList<boolean[][]> all = i.readAll();
         
         p=new Polyomino(10, 10, all.get((int)(Math.random()*all.size())), new Random().nextFloat());

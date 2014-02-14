@@ -31,20 +31,17 @@ public class Polyomino extends Component{
      * boolean[][] shape must be square
      */
     public Polyomino(int xLoc, int yLoc, boolean[][] shape, float hue){
-        this.loc=new Point(xLoc, yLoc);
         poly=new ArrayList<>();
         
         shape = format(shape);
         
         size = shape.length;
-        
-        int dx = (shape[0].length-1)/2;
-        int dy = (shape.length-1)/2;
+        this.loc=new Point(xLoc-size/2, yLoc-size/2);
         
         for (int x=0; x<shape[0].length; x++){
             for (int y=0; y<shape.length; y++){
                 if (shape[y][x])
-                    poly.add(new Block(x+this.loc.x-dx, y+this.loc.y-dy, hue));
+                    poly.add(new Block(x+this.loc.x, y+this.loc.y, hue));
             }
         }
     }
@@ -74,26 +71,9 @@ public class Polyomino extends Component{
     }
     
     public void rotate(){
-        if (size%2==1){
-            int cx = loc.x-(size-1)/2;
-            int cy = loc.y-(size-1)/2;
-            for (Block bl:poly){
-                int x = bl.getLoc().x-cx;
-                int y = bl.getLoc().y-cy;
-                int dx = y-x;
-                int dy = 2-x-y;
-                bl.translate(dx,dy);
-            }
-        } else {
-            int cx = loc.x-(size-1)/2;
-            int cy = loc.y-(size-1)/2;
-            for (Block bl:poly){
-                int x=bl.getLoc().x-cx;
-                int y=bl.getLoc().y-cy;
-                int dx=y-x;
-                int dy=size-1-x-y;
-                bl.translate(dx,dy);
-            }
+        for (Block bl:poly){
+            bl.translate(bl.getLoc().y+loc.x-bl.getLoc().x-loc.y,
+                    size-1-bl.getLoc().x-bl.getLoc().y+loc.x+loc.y);
         }
     }
 
@@ -168,15 +148,15 @@ public class Polyomino extends Component{
         
         if (shape.length>=shape[0].length){
             for (int i=0; i<shape.length; i++){
-                if (shape[i][0]) lWeight++;
-                if (shape[i][shape[i].length-1]) rWeight++;
+                if (shape[i][0]) rWeight++;
+                if (shape[i][shape[i].length-1]) lWeight++;
             }
         }
         
         if (shape[0].length>=shape.length){
             for (int i=0; i<shape[0].length; i++){
-                if (shape[0][i]) tWeight++;
-                if (shape[shape.length-1][i]) bWeight++;
+                if (shape[0][i]) bWeight++;
+                if (shape[shape.length-1][i]) tWeight++;
             }
         }
         
@@ -226,7 +206,7 @@ public class Polyomino extends Component{
         
         for (int i=0; i<shape.length; i++){
             for (int j=0; j<shape[0].length; j++){
-                newS[i+(newSize-shape.length)/2][j+(newSize-shape[0].length)/2]=shape[i][j];
+                newS[i+(newSize-shape.length+1)/2][j+(newSize-shape[0].length+1)/2]=shape[i][j];
             }
         }
         return newS;
