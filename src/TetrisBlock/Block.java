@@ -1,7 +1,8 @@
 package TetrisBlock;
 
 
-import Temp.Field;
+import gui.Field;
+import gui.Gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -25,11 +26,7 @@ public class Block extends Component{
     
     private BufferedImage bi;
     private Point loc;
-    
-    public static final int DIR_DOWN=0;
-    public static final int DIR_UP=1;
-    public static final int DIR_LEFT=2;
-    public static final int DIR_RIGHT=3;
+    private float hue;
     
     public Block(int xLoc, int yLoc, float hue) {
         try {
@@ -39,7 +36,7 @@ public class Block extends Component{
         }
         
         setHueSaturation(bi, hue, 1);
-        
+        this.hue=hue;
         this.loc=new Point(xLoc, yLoc);
     }
         
@@ -62,14 +59,12 @@ public class Block extends Component{
     
     @Override
     public void paint(Graphics g){
-        g.drawImage(bi, bi.getWidth()*loc.x, bi.getWidth()*(Field.HEIGHT-loc.y), null);
+        g.drawImage(bi, bi.getWidth()*loc.x+Field.B_WIDTH,
+                bi.getWidth()*(Field.F_HEIGHT-loc.y+1), null);
     }
     
-    public void shift(int direction){
-        if (direction == DIR_DOWN) loc.translate(0, -1);
-        else if (direction == DIR_UP) loc.translate(0,1);
-        else if (direction == DIR_LEFT) loc.translate(-1,0);
-        else if (direction == DIR_RIGHT) loc.translate(1,0);
+    public Point getTranslateLoc(int dx, int dy){
+        return new Point(loc.x+dx, loc.y+dy);
     }
     
     public void translate(int dx, int dy){
@@ -79,5 +74,9 @@ public class Block extends Component{
     
     public Point getLoc(){
         return new Point(loc);
+    }
+    
+    public String toString(){
+        return loc.toString();
     }
 }

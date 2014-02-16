@@ -1,7 +1,7 @@
 package TetrisBlock;
 
 
-import Temp.Field;
+import gui.Field;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -46,28 +46,57 @@ public class Polyomino extends Component{
         }
     }
     
+    public Polyomino(int xLoc, int yLoc, ArrayList<Block> poly, int size){
+        this.poly=poly;
+        this.size=size;
+        this.loc=new Point(xLoc,yLoc);
+    }
+    
+    public ArrayList<Block> getContents(){
+        return poly;
+    }
+    
+    public Point getLoc(){
+        return new Point(loc);
+    }
+    
+    public int getLength(){
+        return this.size;
+    }
+    
     @Override
     public void paint(Graphics g){
         for (Block b:poly){
-            if (b!=null){
-                BufferedImage bi = b.getImage();
-                int xPos = bi.getWidth()*b.getLoc().x;
-                int yPos = b.getImage().getWidth()*(Field.HEIGHT-b.getLoc().y);
-                g.drawImage(bi, xPos, yPos, null);
-            }
+            if (b!= null) b.paint(g);
         }
     }
     
-    public void shift(int direction){
-        if (direction == DIR_DOWN) loc.translate(0, -1);
-        else if (direction == DIR_UP) loc.translate(0,1);
-        else if (direction == DIR_LEFT) loc.translate(-1,0);
-        else if (direction == DIR_RIGHT) loc.translate(1,0);
+    public ArrayList<Point> getTranslateLocs(int dx, int dy){
+        ArrayList<Point> locs = new ArrayList<>();
         
         for (Block b:poly){
             if (b!=null)
-                b.shift(direction);
+                locs.add(b.getTranslateLoc(dx, dy));
         }
+        return locs;
+    }
+    
+    public void translate(int dx, int dy){
+        loc.translate(dx, dy);
+        
+        for (Block b:poly){
+            if (b!=null)
+                b.translate(dx, dy);
+        }
+    }
+    
+    public ArrayList<Point> getRotateAndTranslateLocs(int dx, int dy){
+        ArrayList<Point> locs = getTranslateLocs(dx,dy);
+        for (Point p:locs){
+            p.translate(p.y+loc.x+dx-p.x-loc.y-dy,
+                    size-1-p.x-p.y+loc.x+dx+loc.y+dy);
+        }
+        return locs;
     }
     
     public void rotate(){

@@ -49,6 +49,9 @@ public class PolyominoInputStream {
                 polyomino[x][y] = ((currentByte >> (count%8)) & 1) == 1;
             }
         }
+        if (polyomino==null){
+            i.close();
+        }
         return polyomino;
     }
     
@@ -68,7 +71,11 @@ public class PolyominoInputStream {
                 Logger.getLogger(PolyominoInputStream.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+        try {
+            i.close();
+        } catch (IOException ex) {
+            Logger.getLogger(PolyominoInputStream.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return all;
     }
 }

@@ -23,16 +23,14 @@ public class PolyominoGenerator {
     private static ArrayList<Integer> polyID=new ArrayList<>();
     
     public static void generatePolyomino(int size){
-        assert size>0;
         
-        PolyominoOutputStream o = null;
-        try {
-            o = new PolyominoOutputStream(size);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(PolyominoGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        if (size==1){
+        if (size < 1) return;
+        if (size==1){PolyominoOutputStream o = null;
+            try {
+                o = new PolyominoOutputStream(1);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(PolyominoGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            }
             try {
                 boolean[][] p1 = {{true}};
                 o.writePolyomino(p1);
@@ -53,6 +51,13 @@ public class PolyominoGenerator {
         PolyominoInputStream i = new PolyominoInputStream(size-1);
         
         polyID.clear();
+        
+        PolyominoOutputStream o = null;
+        try {
+            o = new PolyominoOutputStream(size);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PolyominoGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         while(true){
             boolean[][] nMinusOneOmino = null;
