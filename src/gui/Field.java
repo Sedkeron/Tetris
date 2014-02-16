@@ -8,7 +8,6 @@ import TetrisBlock.Block;
 import TetrisBlock.Polyomino;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -29,7 +28,11 @@ public class Field extends Component{
     
     public Field(){
         contents = new Block[F_HEIGHT+Gui.MAX_PSIZE][F_WIDTH];
-        generateBufferedImage();
+        try {
+            bi = ImageIO.read(getClass().getResource("/gui/TetrisBackground.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(Field.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void takePolyomino(Polyomino p){
@@ -103,25 +106,14 @@ public class Field extends Component{
                 }
             }
         }
-        g.drawImage(bi, 0, 0, this);
+        g.drawImage(bi, 0, -48, this);
     }
     
-    public void generateBufferedImage(){
-        bi = new BufferedImage(Field.F_WIDTH*24+2*Field.B_WIDTH,
-                (Field.F_HEIGHT+2)*24+Field.B_WIDTH, BufferedImage.TYPE_INT_ARGB);
-        BufferedImage b=null;
-        try {
-            b = ImageIO.read(getClass().getResource("/TetrisBlock/TetrisBlock.png"));
-        } catch (IOException ex) {
-            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
+    public boolean lose(){
+        boolean lose=false;
+        for (Block b:contents[F_HEIGHT]){
+            lose = lose || b!=null;
         }
-        Graphics2D g = bi.createGraphics();
-        for (int i=0; i<(Field.F_WIDTH*24+2*Field.B_WIDTH); i+=24){
-            g.drawImage(b, i, (Field.F_HEIGHT)*24+2*Field.B_WIDTH, this);
-        }
-        for (int i=0; i<(Field.F_HEIGHT+2)*24+Field.B_WIDTH; i+=24){
-            g.drawImage(b, 0, i, this);
-            g.drawImage(b, Field.F_WIDTH*24+Field.B_WIDTH, i, this);
-        }
+        return lose;
     }
 }

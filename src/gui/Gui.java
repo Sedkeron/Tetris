@@ -9,8 +9,14 @@ import TetrisBlock.Polyomino;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
@@ -29,16 +35,18 @@ public class Gui {
     private static JFrame frame;
     private static JPanel mainPanel;
     private static Action upAction, leftAction, rightAction, spaceAction, downAction;
-    private static long t;
-    private static long totalT;
+    private static long waitTime;
     private static boolean running;
-    private static BufferedImage bi;
+    private static BufferedImage foreground;
+    private static final Object LOCK = new Object();
+    
+    public Gui(){}
     
     public static void main(String[] args) {
         frame = new JFrame("Tetris");
         frame.add(makePanel());
         frame.setPreferredSize(new Dimension(Field.F_WIDTH*24+2*Field.B_WIDTH+6,
-                (Field.F_HEIGHT+2)*24+Field.B_WIDTH+28));
+                Field.F_HEIGHT*24+Field.B_WIDTH+28));
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -46,16 +54,35 @@ public class Gui {
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
         
-        totalT=400;
+        waitTime=400;
         running=false;
+        setForeground("TetrisStartScreenV1.png");
         
+        
+        mainPanel.repaint();
         while(true){
-            while (!running);
-            t = System.currentTimeMillis();
-            while (System.currentTimeMillis()-t<totalT);
-            if (!field.act(curP)) curP=getRanPoly();
-            mainPanel.repaint();
-            totalT=400;
+            synchronized (LOCK){
+                while (!running) try {
+                    LOCK.wait();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Gui.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            try {
+                mainPanel.repaint();
+                Thread.sleep(waitTime/8);
+                synchronized (LOCK){
+                    LOCK.wait(waitTime*7/8);
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Gui.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if (!field.act(curP)){
+                curP=getRanPoly();
+                if (field.lose()){
+                    reset();
+                }
+            }
         }
     }
 
@@ -66,6 +93,7 @@ public class Gui {
                 super.paintComponent(g);
                 curP.paint(g);
                 field.paint(g);
+                if (foreground!=null) g.drawImage(foreground, 0, -24, this);
             }
         };
         upAction = new UpAction();
@@ -90,6 +118,7 @@ public class Gui {
         mainPanel.getInputMap().put(KeyStroke.getKeyStroke("S"), "doDownAction");
         mainPanel.getActionMap().put("doDownAction", downAction);
         mainPanel.getInputMap().put(KeyStroke.getKeyStroke("SPACE"), "doSpaceAction");
+        mainPanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, InputEvent.SHIFT_DOWN_MASK), "doSpaceAction");
         mainPanel.getActionMap().put("doSpaceAction", spaceAction);
         mainPanel.setPreferredSize(new Dimension(300,500));
         curP=getRanPoly();
@@ -103,57 +132,88 @@ public class Gui {
     private static class UpAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent up){
-            field.rotate(curP);
-            mainPanel.repaint();
+            synchronized (LOCK){
+                if (!running) return;
+                field.rotate(curP);
+                mainPanel.repaint();
+            }
         }
     }
     private static class LeftAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent left){
-            field.translate(curP,-1,0);
-            mainPanel.repaint();
+            synchronized (LOCK){
+                if (!running) return;
+                field.translate(curP,-1,0);
+                mainPanel.repaint();
+            }
         }
     }
     private static class RightAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent right){
-            field.translate(curP,1,0);
-            mainPanel.repaint();
-        }
-    }
-    private static class SpaceAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent space){
-            
-            if (!running){
-                running=true;
-                t=System.currentTimeMillis();
-                
-                return;
+            synchronized (LOCK){
+                if (!running) return;
+                field.translate(curP,1,0);
+                mainPanel.repaint();
             }
-            
-            while (field.translate(curP,0,-1));
-            field.takePolyomino(curP);
-            curP = getRanPoly();
-            mainPanel.repaint();
-            t=System.currentTimeMillis();
         }
     }
     private static class DownAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent down){
-            totalT=100;
+            synchronized (LOCK){
+                LOCK.notifyAll();
+            }
+        }
+    }
+    private static class SpaceAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent space){
+            synchronized (LOCK){
+                if (!running){
+                    running=true;
+                    foreground=null;
+                    LOCK.notifyAll();
+                    return;
+                }
+                mainPanel.repaint();
+                while (field.translate(curP,0,-1));
+                field.takePolyomino(curP);
+                curP = getRanPoly();
+                if (field.lose()){
+                    reset();
+                }
+            }
         }
     }
     
     
     private static Polyomino getRanPoly(){
-        PolyominoInputStream i = new PolyominoInputStream((int)(Math.random()*6)+1);
+        int s = (int)(Math.random()*6)+1;
+        PolyominoInputStream i = new PolyominoInputStream(s);
         ArrayList<boolean[][]> all = i.readAll();
         
         int n = (int)(Math.random()*all.size());
         
         
-        return new Polyomino(Field.F_WIDTH/2, Field.F_HEIGHT, all.get(n), (float)n/all.size());
+        return new Polyomino(Field.F_WIDTH/2, Field.F_HEIGHT+3, all.get(n), (float)n/all.size());
+    }
+    
+    private static void setForeground(String name){
+        try {
+            foreground=ImageIO.read(new Gui().getClass().getResource("/gui/"+name));
+        } catch (IOException ex) {
+            Logger.getLogger(Gui.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private static void reset(){
+        synchronized (LOCK){
+            running=false;
+            setForeground("TetrisStartScreenV1.png");
+            mainPanel.repaint();
+            field = new Field();
+        }
     }
 }

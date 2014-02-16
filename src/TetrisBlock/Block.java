@@ -2,7 +2,6 @@ package TetrisBlock;
 
 
 import gui.Field;
-import gui.Gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -26,7 +25,6 @@ public class Block extends Component{
     
     private BufferedImage bi;
     private Point loc;
-    private float hue;
     
     public Block(int xLoc, int yLoc, float hue) {
         try {
@@ -36,7 +34,6 @@ public class Block extends Component{
         }
         
         setHueSaturation(bi, hue, 1);
-        this.hue=hue;
         this.loc=new Point(xLoc, yLoc);
     }
         
@@ -60,7 +57,7 @@ public class Block extends Component{
     @Override
     public void paint(Graphics g){
         g.drawImage(bi, bi.getWidth()*loc.x+Field.B_WIDTH,
-                bi.getWidth()*(Field.F_HEIGHT-loc.y+1), null);
+                bi.getWidth()*(Field.F_HEIGHT-loc.y-1), null);
     }
     
     public Point getTranslateLoc(int dx, int dy){
