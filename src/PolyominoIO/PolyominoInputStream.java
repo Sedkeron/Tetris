@@ -32,6 +32,7 @@ public class PolyominoInputStream {
     
     public boolean[][] read() throws IOException{
         
+        if (size<=0) return null;
         boolean[][] polyomino = new boolean[size][size];
         int numBytes = (polyomino.length * polyomino[0].length + 7)/ 8;
         byte[] b = new byte[numBytes];
