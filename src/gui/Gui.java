@@ -122,8 +122,8 @@ public class Gui {
         if (resize){
             fieldPanel.setPreferredSize(new Dimension((fWidth+2)
                     *Field.B_SIZE, (fHeight+2)*Field.B_SIZE));
-            maxPSizeS.setMaximum(Math.max(fWidth, 20));
-            minPSizeS.setMaximum(Math.max(fWidth, 20));
+            maxPSizeS.setMaximum(Math.min(fWidth, 20));
+            minPSizeS.setMaximum(Math.min(fWidth, 20));
 
             fieldPanel.repaint();
             
