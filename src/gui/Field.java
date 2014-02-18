@@ -8,7 +8,9 @@ import TetrisBlock.Block;
 import TetrisBlock.Polyomino;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -20,16 +22,20 @@ import javax.imageio.ImageIO;
  * @author Jonathon
  */
 public class Field extends Component{
-    public static final int F_WIDTH = 10;
-    public static final int F_HEIGHT = 20;
-    public static final int B_WIDTH = 24;
+    public static int fWidth;
+    public static int fHeight;
+    public static final int B_SIZE=24;
     private Block[][] contents;
     private BufferedImage bi;
     
-    public Field(){
-        contents = new Block[F_HEIGHT+Gui.MAX_PSIZE][F_WIDTH];
+    //User should only have one Field in use at a time
+    
+    public Field(int fWidth, int fHeight){
+        this.fWidth=fWidth;
+        this.fHeight=fHeight;
+        contents = new Block[fHeight+fWidth][fWidth];
         try {
-            bi = ImageIO.read(getClass().getResource("/gui/TetrisBackground.png"));
+            generateBufferedImage();
         } catch (IOException ex) {
             Logger.getLogger(Field.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -68,7 +74,7 @@ public class Field extends Component{
         for (int i=0; i<=poly.getLength()/2; i=(i<=0)?(-i+1):(-i)){
             boolean canRotate=true;
             for (Point loc:poly.getRotateAndTranslateLocs(i,0)){
-                if (loc.y<0 || loc.x<0 || loc.x>=F_WIDTH ||
+                if (loc.y<0 || loc.x<0 || loc.x>=fWidth ||
                         contents[loc.y][loc.x] != null){
                     canRotate=false;
                 }
@@ -84,7 +90,7 @@ public class Field extends Component{
     
     public boolean translate(Polyomino poly, int dx, int dy){
         for (Point loc:poly.getTranslateLocs(dx, dy)){
-            if (loc.y<0 || loc.x<0 || loc.x>=F_WIDTH ||
+            if (loc.y<0 || loc.x<0 || loc.x>=fWidth ||
                     contents[loc.y][loc.x] != null) return false;
         }
         poly.translate(dx, dy);
@@ -97,6 +103,14 @@ public class Field extends Component{
         return false;
     }
     
+    public boolean lose(){
+        boolean lose=false;
+        for (Block b:contents[fHeight]){
+            lose = lose || b!=null;
+        }
+        return lose;
+    }
+    
     @Override
     public void paint(Graphics g){
         for (Block[] bls:contents){
@@ -106,14 +120,35 @@ public class Field extends Component{
                 }
             }
         }
-        g.drawImage(bi, 0, -48, this);
+        g.drawImage(bi, 0, 0, this);
     }
     
-    public boolean lose(){
-        boolean lose=false;
-        for (Block b:contents[F_HEIGHT]){
-            lose = lose || b!=null;
-        }
-        return lose;
+    public void generateBufferedImage() throws IOException{
+        BufferedImage biL, biBL, biB, biBR, biR, biTR, biT, biTL;
+        biL = ImageIO.read(getClass().getResource("/gui/TetrisFieldLeft.png"));
+        biBL = ImageIO.read(getClass().getResource("/gui/TetrisFieldBottomLeft.png"));
+        biB = ImageIO.read(getClass().getResource("/gui/TetrisFieldBottom.png"));
+        biBR = ImageIO.read(getClass().getResource("/gui/TetrisFieldBottomRight.png"));
+        biR = ImageIO.read(getClass().getResource("/gui/TetrisFieldRight.png"));
+        biTR = ImageIO.read(getClass().getResource("/gui/TetrisFieldTopRight.png"));
+        biT = ImageIO.read(getClass().getResource("/gui/TetrisFieldTop.png"));
+        biTL = ImageIO.read(getClass().getResource("/gui/TetrisFieldTopLeft.png"));
+        
+        bi = new BufferedImage((fWidth+2)*B_SIZE, (fHeight+2)*B_SIZE, BufferedImage.TYPE_INT_ARGB);
+        
+        Graphics2D g = bi.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        
+        g.drawImage(biTL, 0, 0, B_SIZE, B_SIZE, 0, 0, biTL.getWidth(), biTL.getHeight(), null);
+        g.drawImage(biBL, 0, B_SIZE*(fHeight+1), B_SIZE, B_SIZE*(fHeight+2), 0, 0, biTL.getWidth(), biTL.getHeight(), null);
+        g.drawImage(biTR, B_SIZE*(fWidth+1), 0, B_SIZE*(fWidth+2), B_SIZE, 0, 0, biTL.getWidth(), biTL.getHeight(), null);
+        g.drawImage(biBR, B_SIZE*(fWidth+1), B_SIZE*(fHeight+1), B_SIZE*(fWidth+2), B_SIZE*(fHeight+2), 0, 0, biTL.getWidth(), biTL.getHeight(), null);
+        g.drawImage(biL, 0, B_SIZE, B_SIZE, B_SIZE*(fHeight+1), 0, 0, biL.getWidth(), biL.getHeight(), null);
+        g.drawImage(biR, B_SIZE*(fWidth+1), B_SIZE, B_SIZE*(fWidth+2), B_SIZE*(fHeight+1), 0, 0, biR.getWidth(), biR.getHeight(), null);
+        g.drawImage(biT, B_SIZE, 0, B_SIZE*(fWidth+1), B_SIZE, 0, 0, biT.getWidth(), biT.getHeight(), null);
+        g.drawImage(biB, B_SIZE, B_SIZE*(fHeight+1), B_SIZE*(fWidth+1), B_SIZE*(fHeight+2), 0, 0, biB.getWidth(), biB.getHeight(), null);
+        
+        
+        g.dispose();
     }
 }

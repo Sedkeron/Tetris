@@ -56,8 +56,9 @@ public class Block extends Component{
     
     @Override
     public void paint(Graphics g){
-        g.drawImage(bi, bi.getWidth()*loc.x+Field.B_WIDTH,
-                bi.getWidth()*(Field.F_HEIGHT-loc.y-1), null);
+        if ((Field.fHeight-loc.y)>0)
+            g.drawImage(bi, Field.B_SIZE*(loc.x+1),
+                    Field.B_SIZE*(Field.fHeight-loc.y), null);
     }
     
     public Point getTranslateLoc(int dx, int dy){
