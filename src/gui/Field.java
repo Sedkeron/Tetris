@@ -41,14 +41,15 @@ public class Field extends Component{
         }
     }
     
-    public void takePolyomino(Polyomino p){
+    //returns the number of lines cleared
+    public int takePolyomino(Polyomino p){
         for (Block b:p.getContents()){
             if (contents[b.getLoc().y][b.getLoc().x]==null){
                 contents[b.getLoc().y][b.getLoc().x] = b;
             }
         }
         p=null;
-        
+        int linesCleared=0;
         //Clearing rows:
         for (int i=contents.length-1; i>=0; i--){
             boolean fullRow=true;
@@ -56,6 +57,7 @@ public class Field extends Component{
                 fullRow = fullRow && b!=null;
             }
             if (fullRow){
+                linesCleared++;
                 Block[][] temp = new Block[contents.length][contents[0].length];
                 System.arraycopy(contents, 0, temp, 0, i);
                 System.arraycopy(contents, i+1, temp, i, contents.length-i-1);
@@ -67,6 +69,7 @@ public class Field extends Component{
                 }
             }
         }
+        return linesCleared;
     }
     
     public boolean rotate(Polyomino poly){
@@ -99,7 +102,6 @@ public class Field extends Component{
     
     public boolean act(Polyomino p){
         if (translate(p, 0, -1)) return true;
-        takePolyomino(p);
         return false;
     }
     

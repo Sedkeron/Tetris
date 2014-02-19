@@ -44,7 +44,7 @@ public class Gui {
     private static volatile JPanel mainPanel, fieldPanel, menuPanel, statsPanel, o1Panel, o2Panel;
     private static volatile JButton startNewGameB, pauseB, exitB;
     private static volatile JSlider minPSizeS, maxPSizeS, xFieldSizeS, yFieldSizeS, speedS;
-    private static volatile JTextField scoreF, linesClearedF, minPSizeT, maxPSizeT,
+    private static volatile JTextField scoreF, scoreFT, linesClearedF, linesClearedFT, minPSizeT, maxPSizeT,
             xFieldSizeT, yFieldSizeT, speedT;
     private static volatile Action upAction, leftAction, rightAction, spaceAction,
             downAction, startAction, pauseAction, exitAction;
@@ -86,6 +86,8 @@ public class Gui {
                         LOCK.wait();
                     }
                     if (!field.act(curP)){
+                        int lC = field.takePolyomino(curP);
+                        setLinesCleared(lC+linesCleared);
                         curP=getRanPoly();
                         if (field.lose()){
                             newGame=true;
@@ -110,6 +112,8 @@ public class Gui {
     }
     
     private static void newGame(){
+        setLinesCleared(0);
+        setScore(0);
         running=false;
         boolean resize = false;
         if (fWidth != newFWidth || fHeight != newFHeight){
@@ -203,7 +207,8 @@ public class Gui {
                 }
                 fieldPanel.repaint();
                 while (field.translate(curP,0,-1));
-                field.takePolyomino(curP);
+                int lC = field.takePolyomino(curP);
+                setLinesCleared(lC+linesCleared);
                 curP = getRanPoly();
                 if (field.lose()){
                     running=false;
@@ -223,7 +228,7 @@ public class Gui {
         
         return new Polyomino(Field.fWidth/2, Field.fHeight+s/2, all.get(n), (float)n/all.size());
     }
-    
+
     private static void setForeground(String name){
         try {
             BufferedImage b=ImageIO.read(new Gui().getClass().getResource("/gui/"+name));
@@ -326,6 +331,10 @@ public class Gui {
     
     private static JPanel makeStatsPanel(){
         statsPanel = new JPanel(new GridBagLayout());
+        statsPanel.add(makeScoreTitleTField(), mSTTF());
+        statsPanel.add(makeScoreTField(), mSTFi());
+        statsPanel.add(makeLCTitleTField(), mLCTTF());
+        statsPanel.add(makeLCTField(), mLCTF());
         return statsPanel;
     }
     private static GridBagConstraints statsGBC(){
@@ -372,10 +381,6 @@ public class Gui {
     
     private static JPanel makeOptionsPanel1(){
         o1Panel = new JPanel(new GridBagLayout());
-        o1Panel.add(makeMinPSizeTField(), mMPSTF());
-        o1Panel.add(makeMinPSizeSlider(), mMPSS());
-        o1Panel.add(makeMaxPSizeTField(), mMxPSTF());
-        o1Panel.add(makeMaxPSizeSlider(), mMxPSS());
         o1Panel.add(makeXFieldTField(), mXFTF());
         o1Panel.add(makeXFieldSlider(), mXFS());
         o1Panel.add(makeYFieldTField(), mYFTF());
@@ -404,6 +409,10 @@ public class Gui {
         o2Panel = new JPanel(new GridBagLayout());
         o2Panel.add(makeSpeedTField(), mSTF());
         o2Panel.add(makeSpeedSlider(), mSS());
+        o2Panel.add(makeMinPSizeTField(), mMPSTF());
+        o2Panel.add(makeMinPSizeSlider(), mMPSS());
+        o2Panel.add(makeMaxPSizeTField(), mMxPSTF());
+        o2Panel.add(makeMaxPSizeSlider(), mMxPSS());
         
         return o2Panel;
     }
@@ -499,132 +508,6 @@ public class Gui {
         return c;
     }
     
-    private static JTextField makeMinPSizeTField(){
-        minPSizeT = new JTextField("Minimum Polyomino Size");
-        minPSizeT.setEditable(false);
-        minPSizeT.setBorder(javax.swing.BorderFactory.createEmptyBorder());
-        minPSizeT.setHorizontalAlignment(JTextField.CENTER);
-        minPSizeT.setFocusable(false);
-        
-        return minPSizeT;
-    }
-    private static GridBagConstraints mMPSTF(){
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor=GridBagConstraints.CENTER;
-        c.fill=GridBagConstraints.BOTH;
-        c.gridheight=1;
-        c.gridwidth=1;
-        c.gridx=0;
-        c.gridy=0;
-        c.insets=new Insets(10,10,0,10);
-        c.ipadx=0;
-        c.ipady=0;
-        c.weightx=0;
-        c.weighty=0;
-        
-        return c;
-    }
-    
-    private static JSlider makeMinPSizeSlider(){
-        minPSizeS = new JSlider(JSlider.HORIZONTAL, MIN_PSIZE, fWidth, minPSize);
-        minPSizeS.setFocusable(false);
-        minPSizeS.addChangeListener(new MinPSliderListener());
-        minPSizeS.setMajorTickSpacing(1);
-        minPSizeS.setMinorTickSpacing(1);
-        minPSizeS.setPaintTicks(true);
-        
-        Hashtable labelTable = new Hashtable();
-        
-        for (int i=1; i<=25; i++){
-            if (i<10 || (i%2==0))
-            labelTable.put(i, new JLabel(String.valueOf(i)));
-        }
-        
-        minPSizeS.setLabelTable(labelTable);
-        minPSizeS.setPaintLabels(true);
-        
-        return minPSizeS;
-    }
-    private static GridBagConstraints mMPSS(){
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor=GridBagConstraints.CENTER;
-        c.fill=GridBagConstraints.BOTH;
-        c.gridheight=1;
-        c.gridwidth=1;
-        c.gridx=0;
-        c.gridy=1;
-        c.insets=new Insets(0,10,10,10);
-        c.ipadx=0;
-        c.ipady=0;
-        c.weightx=0;
-        c.weighty=0;
-        
-        return c;
-    }
-    
-    private static JTextField makeMaxPSizeTField(){
-        maxPSizeT = new JTextField("Maximum Polyomino Size");
-        maxPSizeT.setEditable(false);
-        maxPSizeT.setBorder(javax.swing.BorderFactory.createEmptyBorder());
-        maxPSizeT.setHorizontalAlignment(JTextField.CENTER);
-        maxPSizeT.setFocusable(false);
-        
-        return maxPSizeT;
-    }
-    private static GridBagConstraints mMxPSTF(){
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor=GridBagConstraints.CENTER;
-        c.fill=GridBagConstraints.BOTH;
-        c.gridheight=1;
-        c.gridwidth=1;
-        c.gridx=0;
-        c.gridy=2;
-        c.insets=new Insets(10,10,0,10);
-        c.ipadx=0;
-        c.ipady=0;
-        c.weightx=0;
-        c.weighty=0;
-        
-        return c;
-    }
-    
-    private static JSlider makeMaxPSizeSlider(){
-        maxPSizeS = new JSlider(JSlider.HORIZONTAL, MIN_PSIZE, fWidth, maxPSize);
-        maxPSizeS.setFocusable(false);
-        maxPSizeS.addChangeListener(new MaxPSliderListener());
-        maxPSizeS.setMajorTickSpacing(1);
-        maxPSizeS.setMinorTickSpacing(1);
-        maxPSizeS.setPaintTicks(true);
-        
-        Hashtable labelTable = new Hashtable();
-        
-        for (int i=1; i<=25; i++){
-            if (i<10 || (i%2==0))
-            labelTable.put(i, new JLabel(String.valueOf(i)));
-        }
-        
-        maxPSizeS.setLabelTable(labelTable);
-        maxPSizeS.setPaintLabels(true);
-        
-        return maxPSizeS;
-    }
-    private static GridBagConstraints mMxPSS(){
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor=GridBagConstraints.CENTER;
-        c.fill=GridBagConstraints.BOTH;
-        c.gridheight=1;
-        c.gridwidth=1;
-        c.gridx=0;
-        c.gridy=3;
-        c.insets=new Insets(0,10,10,10);
-        c.ipadx=0;
-        c.ipady=0;
-        c.weightx=0;
-        c.weighty=0;
-        
-        return c;
-    }
-    
     private static JTextField makeXFieldTField(){
         xFieldSizeT = new JTextField("Field Width");
         xFieldSizeT.setEditable(false);
@@ -641,7 +524,7 @@ public class Gui {
         c.gridheight=1;
         c.gridwidth=1;
         c.gridx=0;
-        c.gridy=4;
+        c.gridy=0;
         c.insets=new Insets(10,10,0,10);
         c.ipadx=0;
         c.ipady=0;
@@ -668,7 +551,7 @@ public class Gui {
         c.gridheight=1;
         c.gridwidth=1;
         c.gridx=0;
-        c.gridy=5;
+        c.gridy=1;
         c.insets=new Insets(0,10,10,10);
         c.ipadx=0;
         c.ipady=0;
@@ -694,7 +577,7 @@ public class Gui {
         c.gridheight=1;
         c.gridwidth=1;
         c.gridx=0;
-        c.gridy=6;
+        c.gridy=2;
         c.insets=new Insets(10,10,0,10);
         c.ipadx=0;
         c.ipady=0;
@@ -721,7 +604,7 @@ public class Gui {
         c.gridheight=1;
         c.gridwidth=1;
         c.gridx=0;
-        c.gridy=7;
+        c.gridy=3;
         c.insets=new Insets(0,10,10,10);
         c.ipadx=0;
         c.ipady=0;
@@ -775,6 +658,236 @@ public class Gui {
         c.gridwidth=1;
         c.gridx=0;
         c.gridy=1;
+        c.insets=new Insets(0,10,10,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JTextField makeMinPSizeTField(){
+        minPSizeT = new JTextField("Minimum Polyomino Size");
+        minPSizeT.setEditable(false);
+        minPSizeT.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        minPSizeT.setHorizontalAlignment(JTextField.CENTER);
+        minPSizeT.setFocusable(false);
+        
+        return minPSizeT;
+    }
+    private static GridBagConstraints mMPSTF(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=2;
+        c.insets=new Insets(10,10,0,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JSlider makeMinPSizeSlider(){
+        minPSizeS = new JSlider(JSlider.HORIZONTAL, MIN_PSIZE, fWidth, minPSize);
+        minPSizeS.setFocusable(false);
+        minPSizeS.addChangeListener(new MinPSliderListener());
+        minPSizeS.setMajorTickSpacing(1);
+        minPSizeS.setMinorTickSpacing(1);
+        minPSizeS.setPaintTicks(true);
+        
+        Hashtable labelTable = new Hashtable();
+        
+        for (int i=1; i<=25; i++){
+            if (i<10 || (i%2==0))
+            labelTable.put(i, new JLabel(String.valueOf(i)));
+        }
+        
+        minPSizeS.setLabelTable(labelTable);
+        minPSizeS.setPaintLabels(true);
+        
+        return minPSizeS;
+    }
+    private static GridBagConstraints mMPSS(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=3;
+        c.insets=new Insets(0,10,10,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JTextField makeMaxPSizeTField(){
+        maxPSizeT = new JTextField("Maximum Polyomino Size");
+        maxPSizeT.setEditable(false);
+        maxPSizeT.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        maxPSizeT.setHorizontalAlignment(JTextField.CENTER);
+        maxPSizeT.setFocusable(false);
+        
+        return maxPSizeT;
+    }
+    private static GridBagConstraints mMxPSTF(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=4;
+        c.insets=new Insets(10,10,0,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JSlider makeMaxPSizeSlider(){
+        maxPSizeS = new JSlider(JSlider.HORIZONTAL, MIN_PSIZE, fWidth, maxPSize);
+        maxPSizeS.setFocusable(false);
+        maxPSizeS.addChangeListener(new MaxPSliderListener());
+        maxPSizeS.setMajorTickSpacing(1);
+        maxPSizeS.setMinorTickSpacing(1);
+        maxPSizeS.setPaintTicks(true);
+        
+        Hashtable labelTable = new Hashtable();
+        
+        for (int i=1; i<=25; i++){
+            if (i<10 || (i%2==0))
+            labelTable.put(i, new JLabel(String.valueOf(i)));
+        }
+        
+        maxPSizeS.setLabelTable(labelTable);
+        maxPSizeS.setPaintLabels(true);
+        
+        return maxPSizeS;
+    }
+    private static GridBagConstraints mMxPSS(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=5;
+        c.insets=new Insets(0,10,10,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JTextField makeScoreTitleTField(){
+        scoreFT = new JTextField("Score:");
+        scoreFT.setEditable(false);
+        scoreFT.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        scoreFT.setHorizontalAlignment(JTextField.CENTER);
+        scoreFT.setFocusable(false);
+        
+        return scoreFT;
+    }
+    private static GridBagConstraints mSTTF(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=0;
+        c.insets=new Insets(0,10,10,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JTextField makeScoreTField(){
+        scoreF = new JTextField("0");
+        scoreF.setEditable(false);
+        scoreF.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        scoreF.setHorizontalAlignment(JTextField.CENTER);
+        scoreF.setFocusable(false);
+        
+        return scoreF;
+    }
+    private static GridBagConstraints mSTFi(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=1;
+        c.insets=new Insets(0,10,10,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JTextField makeLCTitleTField(){
+        linesClearedFT = new JTextField("Lines Cleared:");
+        linesClearedFT.setEditable(false);
+        linesClearedFT.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        linesClearedFT.setHorizontalAlignment(JTextField.CENTER);
+        linesClearedFT.setFocusable(false);
+        
+        return linesClearedFT;
+    }
+    private static GridBagConstraints mLCTTF(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=2;
+        c.insets=new Insets(0,10,10,10);
+        c.ipadx=0;
+        c.ipady=0;
+        c.weightx=0;
+        c.weighty=0;
+        
+        return c;
+    }
+    
+    private static JTextField makeLCTField(){
+        linesClearedF = new JTextField("0");
+        linesClearedF.setEditable(false);
+        linesClearedF.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        linesClearedF.setHorizontalAlignment(JTextField.CENTER);
+        linesClearedF.setFocusable(false);
+        
+        return linesClearedF;
+    }
+    private static GridBagConstraints mLCTF(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor=GridBagConstraints.CENTER;
+        c.fill=GridBagConstraints.BOTH;
+        c.gridheight=1;
+        c.gridwidth=1;
+        c.gridx=0;
+        c.gridy=3;
         c.insets=new Insets(0,10,10,10);
         c.ipadx=0;
         c.ipady=0;
@@ -857,5 +970,14 @@ public class Gui {
         running=false;
         setForeground("TetrisPauseScreen.png");
         field.repaint();
+    }
+    
+    private static void setScore(int score){
+        Gui.score=score;
+        scoreF.setText(String.valueOf(score));
+    }
+    private static void setLinesCleared(int linesCleared){
+        Gui.linesCleared=linesCleared;
+        linesClearedF.setText(String.valueOf(linesCleared));
     }
 }
